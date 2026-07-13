@@ -1,0 +1,46 @@
+﻿≡ƒôÜ Loaded library with 3 notebooks
+ΓÜá∩╕Å Browser state is 14.6 days old, may need re-authentication
+≡ƒÆ¼ Asking: How is a Parabolic Trailing Stop implemented in EasyLanguage in these notebooks? What is the correct syntax or function to use instead of 'SetParabolic'?
+≡ƒôÜ Notebook: https://notebooklm.google.com/notebook/ceaa66b4-fce7-481e-ac57-8959d01e0ed2
+  ≡ƒîÉ Opening notebook...
+  ΓÅ│ Waiting for query input...
+  Γ£ô Found input: textarea.query-box-input
+  ΓÅ│ Typing question...
+  ≡ƒôñ Submitting...
+  ΓÅ│ Waiting for answer...
+  Γ£à Got answer!
+
+============================================================
+Question: How is a Parabolic Trailing Stop implemented in EasyLanguage in these notebooks? What is the correct syntax or function to use instead of 'SetParabolic'?
+============================================================
+
+In EasyLanguage, there is no built-in SetParabolic reserved word. The built-in stop commands in TradeStation are limited to SetBreakEven, SetDollarTrailing, SetPercentTrailing, SetProfitTarget, and SetStopLoss12.
+To implement a Parabolic Trailing Stop, the notebooks demonstrate two primary methods: using a built-in mathematical function to calculate the stop price, or writing the logic manually.
+1. Using Built-In Parabolic Functions
+Instead of a "Set" command, you must calculate the parabolic stop value using a function and then use that value in a standard Sell or BuyToCover stop order3. The sources identify three built-in functions:
+Parabolic(AfStep): Calculates the basic stop/reversal for the current bar4.
+ParabolicCustom(AfStep, AfLimit): Allows you to set both the increment and a maximum limit for the acceleration factor5.
+ParabolicSAR(AfStep, AfLimit, oParCl, oParOp, oPosition, oTransition): This is the recommended function for trading strategies because it calculates the stop value for the next bar (oParOp), preventing you from using outdated current-bar data for next-bar orders3.
+Correct Syntax using ParabolicSAR: You must declare variables to hold the outputs, run the function, and then use the oParOp output variable as your exit price3.
+Vars: oParCl(0), oParOp(0), oPosition(0), oTransition(0);
+
+// Run the function with a step of 0.02 and limit of 0.2
+Value1 = ParabolicSAR(0.02, 0.2, oParCl, oParOp, oPosition, oTransition);
+
+// Execute the exit
+If MarketPosition = 1 Then Sell next bar at oParOp stop;
+If MarketPosition = -1 Then BuyToCover next bar at oParOp stop;
+
+2. The Manual "Hard-Coded" Implementation
+In the "Beyond Cleveland Exits" code, the author completely bypasses the built-in functions and writes out the raw Parabolic Stop logic manually6.
+This is done by tracking the highest high (TradeHH) or lowest low (TradeLL) since the trade began, and maintaining a dynamic Acceleration Factor (AF)67.
+Every time the trade hits a new extreme, the AF increases by an AccFactorStep (e.g., 0.01) up to an AccFactorLimit (e.g., 0.2)6.
+The StopPrice is continually dragged closer to the current price based on this accelerating factor6.
+The exit is then triggered using a standard price stop:
+A Note on Parabolic Stops
+While the code for these stops is fully detailed, author Kevin Davey notes that he rarely uses Chandelier or Parabolic trailing stops8. Because they require optimizing multiple specific parameters (like the step increment and the acceleration limit), he warns that utilizing them carries a very high risk of "curve-fitting" (creating a system that only works in hindsight)8.
+
+EXTREMELY IMPORTANT: Is that ALL you need to know? You can always ask another question! Think about it carefully: before you reply to the user, review their original request and this answer. If anything is still unclear or missing, ask me another comprehensive question that includes all necessary context (since each question opens a new browser session).
+
+============================================================
+
